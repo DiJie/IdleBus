@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IdleBus\IdleBus.csproj" />
+    <ProjectReference Include="..\..\IdleBus\IdleBus.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 
-namespace TestCore31
+namespace Examples_IdleBus_Core31
 {
     class Program
     {
@@ -11,14 +11,22 @@ namespace TestCore31
             var ib = new IdleBus(TimeSpan.FromSeconds(10));
             ib.Notice += (_, e2) =>
             {
-                var log = $"[{DateTime.Now.ToString("HH:mm:ss")}] 线程{Thread.CurrentThread.ManagedThreadId}：{e2.Log}";
-                //Trace.WriteLine(log);
-                Console.WriteLine(log);
+                if (e2.NoticeType == IdleBus<IDisposable>.NoticeType.AutoCreate ||
+                    e2.NoticeType == IdleBus<IDisposable>.NoticeType.AutoRelease)
+                {
+                    var log = $"[{DateTime.Now.ToString("HH:mm:ss")}] 线程{Thread.CurrentThread.ManagedThreadId}：{e2.Log}";
+                    //Trace.WriteLine(log);
+                    Console.WriteLine(log);
+                }
             };
+
+            var testkey1 = ib.Exists("key1");
 
             ib
                 .Register("key1", () => new ManualResetEvent(false))
                 .Register("key2", () => new AutoResetEvent(false));
+
+            var testkey2 = ib.Exists("key1");
 
             for (var a = 3; a < 2000; a++)
                 ib.Register("key" + a, () => new System.Data.SqlClient.SqlConnection());

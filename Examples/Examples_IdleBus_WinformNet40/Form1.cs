@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace TestWinformNet40
+namespace Examples_IdleBus_WinformNet40
 {
     public partial class Form1 : Form
     {
@@ -41,8 +41,9 @@ namespace TestWinformNet40
                 Console.WriteLine(log);
             };
 
+            var key1Val = new ManualResetEvent(false);
             ib
-                .Register("key1", () => new ManualResetEvent(false))
+                .Register("key1", () => key1Val) //姿势错误，第二次创建时会抛出异常
                 .Register("key2", () => new AutoResetEvent(false));
 
             for (var a = 3; a < 2000; a++)

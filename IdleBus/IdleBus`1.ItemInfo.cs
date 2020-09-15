@@ -5,26 +5,26 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
-partial class IdleBus<T>
+partial class IdleBus<TKey, TValue>
 {
 
     class ItemInfo : IDisposable
     {
-        internal IdleBus<T> ib;
-        internal string key;
-        internal Func<T> create;
+        internal IdleBus<TKey, TValue> ib;
+        internal TKey key;
+        internal Func<TValue> create;
         internal TimeSpan idle;
         internal DateTime createTime;
-        internal long timeout;
         internal DateTime lastActiveTime;
         internal long activeCounter;
-        internal int idleCounter;
         internal int releaseErrorCounter;
 
-        internal T value { get; private set; }
+        internal TValue value { get; private set; }
+        internal TValue firstValue { get; private set; }
+        internal bool IsRegisterError { get; private set; }
         object valueLock = new object();
 
-        internal T GetOrCreate()
+        internal TValue GetOrCreate()
         {
             if (isdisposed == true) return null;
             if (value == null)
@@ -49,7 +49,14 @@ partial class IdleBus<T>
                         }
                     }
                     if (iscreate)
+                    {
+                        if (value != null)
+                        {
+                            if (firstValue == null) firstValue = value; //记录首次值
+                            else if (firstValue == value) IsRegisterError = true; //第二次与首次相等，注册姿势错误
+                        }
                         ib.OnNotice(new NoticeEventArgs(NoticeType.AutoCreate, key, null, $"{key} 实例+++创建成功，耗时 {DateTime.Now.Subtract(now).TotalMilliseconds}ms，{ib._usageQuantity}/{ib.Quantity}"));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -59,7 +66,6 @@ partial class IdleBus<T>
             }
             lastActiveTime = DateTime.Now;
             Interlocked.Increment(ref activeCounter);
-            Interlocked.Exchange(ref idleCounter, 0);
             return value;
         }
 
